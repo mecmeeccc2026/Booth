@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff5f5">
+<title>Minty Booth ✿</title>
+<style>
+  :root{
+    --pink:#cfe3c8; --pink-dark:#6f9f69; --cream:#f8fff5; --ink:#405442;
+    --muted:#718574; --green:#dcebd5; --line:#dce9d8; --white:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at top left,#e4f2df 0,transparent 35%),var(--cream);
+    color:var(--ink);font-family:ui-rounded,"Trebuchet MS",system-ui,-apple-system,sans-serif}
+  button,select{font:inherit}
+  .wrap{max-width:1050px;margin:auto;padding:26px 18px 44px}
+  header{text-align:center;margin:8px 0 24px}
+  .sparkle{font-size:25px;color:var(--pink-dark);letter-spacing:9px}
+  h1{font-family:Georgia,serif;font-weight:normal;font-size:clamp(2.2rem,6vw,3.5rem);margin:8px 0 6px;letter-spacing:-1px}
+  .subtitle{color:var(--muted);margin:0;font-size:.98rem}
+  .pill{display:inline-block;background:#fff;border:1px solid var(--line);padding:7px 13px;border-radius:99px;font-size:.8rem;margin-top:13px}
+  .layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:20px;align-items:start}
+  .card{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 12px 32px #b97b8b12}
+  .section-title{font-size:1.02rem;margin:0 0 13px;font-weight:750}
+  .camera-shell{background:#eaf4e6;border:1px solid var(--line);border-radius:18px;overflow:hidden;position:relative;aspect-ratio:4/3;display:grid;place-items:center}
+  video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
+  .camera-placeholder{text-align:center;padding:22px;color:var(--muted);max-width:300px}
+  .camera-placeholder .emoji{font-size:3rem;display:block;margin-bottom:8px}
+  .camera-placeholder p{line-height:1.5;margin:0}
+  .countdown{position:absolute;inset:0;display:none;place-items:center;font-size:clamp(4rem,15vw,7rem);font-weight:900;color:white;text-shadow:0 3px 20px #0006;background:#5a343733}
+  .camera-controls{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+  button{border:0;border-radius:999px;padding:11px 15px;cursor:pointer;transition:transform .15s,opacity .15s}
+  button:hover{transform:translateY(-1px)} button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .primary{background:var(--pink-dark);color:white;font-weight:750;box-shadow:0 5px 0 #c46581}
+  .secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .soft{background:var(--green);color:#43563e}
+  .filter-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 15px}
+  .filter-btn{background:#fff;border:1px solid var(--line);padding:8px 12px;font-size:.87rem}
+  .filter-btn.active{background:#e0efda;border-color:#a9c9a1;color:#426b43}
+  .status{font-size:.88rem;color:var(--muted);min-height:1.35em;margin:12px 2px 0}
+  .shots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .shot{aspect-ratio:3/4;border-radius:10px;border:1px dashed #e6c5ce;background:#fff8f8;overflow:hidden;display:grid;place-items:center;color:#b58e98;font-size:1.3rem;position:relative}
+  .shot img{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  .shot span{position:absolute;bottom:4px;right:5px;font-size:.68rem;background:#fffdf0dd;color:#76565f;border-radius:50%;width:20px;height:20px;display:grid;place-items:center}
+  .progress{height:7px;border-radius:99px;background:#e6efe2;overflow:hidden;margin:12px 0 6px}
+  .progress div{height:100%;width:0;background:var(--pink-dark);transition:width .2s}
+  .preview-wrap{background:#eaf4e6;border-radius:16px;padding:12px;display:flex;justify-content:center;min-height:170px}
+  canvas{display:block;max-width:100%;height:auto;max-height:520px;border-radius:4px;box-shadow:0 5px 18px #68454b20}
+  #finalCanvas{display:none}
+  .preview-empty{text-align:center;align-self:center;color:var(--muted);font-size:.9rem;line-height:1.5;padding:20px}
+  .download-row{display:flex;gap:9px;margin-top:13px}
+  .download-row button{flex:1}
+  .small{font-size:.79rem;color:var(--muted);line-height:1.5;margin:13px 2px 0}
+  .footer{text-align:center;color:#a48a91;font-size:.8rem;margin-top:24px}
+  .hidden{display:none!important}
+  @media(max-width:760px){.layout{grid-template-columns:1fr}.wrap{padding:20px 13px 34px}.card{padding:14px}.camera-controls button{flex:1}.shots{gap:6px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="sparkle">✿ ✧ ✿</div>
+    <h1>Minty Booth</h1>
+    <p class="subtitle">little moments, cute memories ♡</p>
+    <div class="pill">✦ your tiny online photobooth ✦</div>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <h2 class="section-title">♡ 01 — Camera corner</h2>
+      <div class="camera-shell">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="camera-placeholder" id="cameraPlaceholder">
+          <span class="emoji">📸</span>
+          <p>Your camera will appear here.<br>Tap <b>Start camera</b> and allow camera access.</p>
+        </div>
+        <div class="countdown" id="countdown">3</div>
+      </div>
+      <div class="camera-controls">
+        <button class="primary" id="startBtn">Start camera</button>
+        <button class="secondary" id="flipBtn" disabled>↻ Flip camera</button>
+        <button class="soft" id="resetBtn">Start over</button>
+      </div>
+      <h3 class="section-title" style="margin-top:20px">♡ Pick your filter</h3>
+      <div class="filter-row" id="filters">
+        <button class="filter-btn active" data-filter="none">Original</button>
+        <button class="filter-btn" data-filter="warm">Peachy</button>
+        <button class="filter-btn" data-filter="vintage">Vintage</button>
+        <button class="filter-btn" data-filter="mono">B&W</button>
+        <button class="filter-btn" data-filter="dreamy">Dreamy</button>
+      </div>
+      <button class="primary" id="captureBtn" disabled style="width:100%">✿ Take photo 1 of 4</button>
+      <div class="progress"><div id="progressBar"></div></div>
+      <p class="status" id="status" role="status">Ready when you are. Start the camera to begin!</p>
+      <p class="small">Tip: camera access usually requires HTTPS (or localhost). On phones, use your browser's camera permission prompt.</p>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">♡ 02 — Your photo strip</h2>
+      <div class="shots" id="shots">
+        <div class="shot">♡<span>1</span></div><div class="shot">♡<span>2</span></div>
+        <div class="shot">♡<span>3</span></div><div class="shot">♡<span>4</span></div>
+      </div>
+      <p class="small">Take four photos to create your strip. You can change filters between shots.</p>
+      <h3 class="section-title" style="margin-top:22px">♡ Finished strip</h3>
+      <div class="preview-wrap" id="previewWrap">
+        <div class="preview-empty" id="previewEmpty">Your photo strip will show up here ✧<br><span style="font-size:1.5rem">♡ ♡ ♡ ♡</span></div>
+        <canvas id="finalCanvas" aria-label="Final photo strip preview"></canvas>
+      </div>
+      <div class="download-row">
+        <button class="primary" id="downloadBtn" disabled>↓ Download PNG</button>
+        <button class="secondary" id="retakeBtn" disabled>Retake all</button>
+      </div>
+      <p class="small">Your photos stay in this browser session. They are not sent to a server by this page.</p>
+    </section>
+  </main>
+  <div class="footer">made with ♡ and a little bit of green</div>
+</div>
+
+<canvas id="captureCanvas" class="hidden"></canvas>
+<script>
+(() => {
+  const video = document.getElementById('video');
+  const placeholder = document.getElementById('cameraPlaceholder');
+  const countdownEl = document.getElementById('countdown');
+  const startBtn = document.getElementById('startBtn');
+  const flipBtn = document.getElementById('flipBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const statusEl = document.getElementById('status');
+  const progressBar = document.getElementById('progressBar');
+  const shotsEl = document.getElementById('shots');
+  const finalCanvas = document.getElementById('finalCanvas');
+  const captureCanvas = document.getElementById('captureCanvas');
+  const previewEmpty = document.getElementById('previewEmpty');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const retakeBtn = document.getElementById('retakeBtn');
+  const filterButtons = [...document.querySelectorAll('.filter-btn')];
+
+  let stream = null;
+  let facingMode = 'user';
+  let selectedFilter = 'none';
+  let photos = [];
+  let busy = false;
+
+  const filterCss = {
+    none: 'none',
+    warm: 'sepia(.18) saturate(1.25) hue-rotate(-8deg) brightness(1.04)',
+    vintage: 'sepia(.45) contrast(.9) saturate(.8)',
+    mono: 'grayscale(1)',
+    dreamy: 'saturate(1.18) brightness(1.08) contrast(.92)'
+  };
+
+  function setStatus(message) { statusEl.textContent = message; }
+  function updateControls() {
+    captureBtn.disabled = !stream || busy || photos.length >= 4;
+    captureBtn.textContent = photos.length >= 4 ? '♡ All 4 photos captured!' : `✿ Take photo ${photos.length + 1} of 4`;
+    progressBar.style.width = `${photos.length * 25}%`;
+    downloadBtn.disabled = photos.length !== 4;
+    retakeBtn.disabled = photos.length === 0;
+    flipBtn.disabled = !stream || busy;
+  }
+
+  async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setStatus('Camera access is not available here. Open this page over HTTPS or localhost in a modern browser.');
+      return;
+    }
+    stopCamera();
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 960 } }
+      });
+      video.srcObject = stream;
+      video.style.display = 'block';
+      placeholder.style.display = 'none';
+      await video.play();
+      startBtn.textContent = 'Restart camera';
+      flipBtn.disabled = false;
+      setStatus('Camera ready! Pick a filter, then take your first shot ✧');
+      updateControls();
+    } catch (err) {
+      stream = null;
+      video.style.display = 'none';
+      placeholder.style.display = 'grid';
+      const reason = err && err.name === 'NotAllowedError'
+        ? 'Camera permission was blocked. Allow camera access in your browser settings, then try again.'
+        : err && err.name === 'NotFoundError'
+        ? 'No camera was found on this device.'
+        : 'Could not start the camera. Check permissions and make sure no other app is using it.';
+      setStatus(reason);
+      updateControls();
+    }
+  }
+
+  function stopCamera() {
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    stream = null;
+    video.srcObject = null;
+  }
+
+  function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  async function takePhoto() {
+    if (!stream || busy || photos.length >= 4) return;
+    busy = true;
+    updateControls();
+    try {
+      for (let n = 3; n >= 1; n--) {
+        countdownEl.textContent = n;
+        countdownEl.style.display = 'grid';
+        setStatus(`Get ready… ${n}`);
+        await sleep(700);
+      }
+      countdownEl.style.display = 'none';
+      const w = video.videoWidth || 640;
+      const h = video.videoHeight || 480;
+      captureCanvas.width = w;
+      captureCanvas.height = h;
+      const ctx = captureCanvas.getContext('2d');
+      // Mirror the saved photo to match the selfie preview when using the front camera.
+      if (facingMode === 'user') {
+        ctx.translate(w, 0);
+        ctx.scale(-1, 1);
+      }
+      ctx.filter = filterCss[selectedFilter];
+      ctx.drawImage(video, 0, 0, w, h);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.filter = 'none';
+      photos.push(captureCanvas.toDataURL('image/jpeg', .92));
+      renderShots();
+      if (photos.length === 4) {
+        makeStrip();
+        setStatus('All done! Your cute photo strip is ready to download ♡');
+      } else {
+        setStatus(`Cute! Photo ${photos.length} of 4 saved. Change the filter or take the next shot.`);
+      }
+    } catch (err) {
+      setStatus('Something went wrong while capturing. Please try again.');
+    } finally {
+      countdownEl.style.display = 'none';
+      busy = false;
+      updateControls();
+    }
+  }
+
+  function renderShots() {
+    shotsEl.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+      const box = document.createElement('div');
+      box.className = 'shot';
+      if (photos[i]) {
+        const img = document.createElement('img');
+        img.src = photos[i];
+        img.alt = `Photo ${i + 1}`;
+        box.appendChild(img);
+      } else {
+        box.textContent = '♡';
+      }
+      const number = document.createElement('span');
+      number.textContent = String(i + 1);
+      box.appendChild(number);
+      shotsEl.appendChild(box);
+    }
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  async function makeStrip() {
+    if (photos.length !== 4) return;
+    const images = await Promise.all(photos.map(loadImage));
+    const width = 600;
+    const photoH = 440;
+    const gap = 18;
+    const top = 28;
+    const bottom = 80;
+    const height = top + 4 * photoH + 3 * gap + bottom;
+    finalCanvas.width = width;
+    finalCanvas.height = height;
+    const ctx = finalCanvas.getContext('2d');
+    ctx.fillStyle = '#f8fff5';
+    ctx.fillRect(0, 0, width, height);
+    // Tiny decorative dots
+    ctx.fillStyle = '#efc3ce';
+    for (let i = 0; i < 15; i++) {
+      ctx.beginPath();
+      ctx.arc(28 + i * 38, 13, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    images.forEach((img, i) => {
+      const x = 28, y = top + i * (photoH + gap), w = width - 56, h = photoH;
+      ctx.save();
+      ctx.shadowColor = '#547d5222';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x - 5, y - 5, w + 10, h + 10);
+      ctx.restore();
+      // Center-crop each image to the photo frame.
+      const scale = Math.max(w / img.width, h / img.height);
+      const sw = w / scale, sh = h / scale;
+      const sx = (img.width - sw) / 2, sy = (img.height - sh) / 2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+      ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+      ctx.restore();
+    });
+    ctx.fillStyle = '#547d52';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 25px Georgia, serif';
+    ctx.fillText('little moments ♡', width / 2, height - 42);
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#7e9c79';
+    ctx.fillText('MINTY BOOTH  ✿', width / 2, height - 17);
+    finalCanvas.style.display = 'block';
+    previewEmpty.style.display = 'none';
+    updateControls();
+  }
+
+  function resetPhotos() {
+    photos = [];
+    renderShots();
+    finalCanvas.style.display = 'none';
+    previewEmpty.style.display = 'block';
+    const ctx = finalCanvas.getContext('2d');
+    ctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
+    setStatus(stream ? 'Ready for a fresh set of four photos ♡' : 'Start the camera when you are ready!');
+    updateControls();
+  }
+
+  startBtn.addEventListener('click', startCamera);
+  flipBtn.addEventListener('click', async () => {
+    facingMode = facingMode === 'user' ? 'environment' : 'user';
+    await startCamera();
+  });
+  captureBtn.addEventListener('click', takePhoto);
+  resetBtn.addEventListener('click', resetPhotos);
+  retakeBtn.addEventListener('click', resetPhotos);
+
+  filterButtons.forEach(btn => btn.addEventListener('click', () => {
+    selectedFilter = btn.dataset.filter;
+    filterButtons.forEach(b => b.classList.toggle('active', b === btn));
+    video.style.filter = filterCss[selectedFilter];
+    setStatus(`Filter selected: ${btn.textContent}. It will apply to your next shot.`);
+  }));
+
+  downloadBtn.addEventListener('click', () => {
+    if (photos.length !== 4) return;
+    const link = document.createElement('a');
+    link.download = 'minty-booth-photo-strip.png';
+    link.href = finalCanvas.toDataURL('image/png');
+    link.click();
+  });
+
+  window.addEventListener('pagehide', stopCamera);
+  renderShots();
+  updateControls();
+})();
+</script>
+</body>
+</html>
